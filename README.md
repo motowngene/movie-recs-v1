@@ -2,6 +2,10 @@
 
 A V1 movie recommendation website built with Next.js.
 
+## Frontend Preview
+
+![Movie Recs V1 Frontend](./public/frontend-preview.png)
+
 ## What it does (V1)
 
 - Lets users choose favorite genres
