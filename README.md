@@ -6,6 +6,10 @@ A V1 movie recommendation website built with Next.js.
 
 ![Movie Recs V1 Frontend](./public/frontend-preview.png)
 
+### Latest UI (V1+ Enhancements)
+
+![Movie Recs V1 Plus Frontend](./public/frontend-preview-v2.png)
+
 ## What it does (V1+)
 
 - Lets users choose favorite genres
@@ -76,6 +80,16 @@ Recommended production-safe approach:
 - TMDB for metadata/discovery/posters
 - OMDb (licensed/API-based) for IMDb rating fields
 - Optional provider partnerships for broader review text rights
+
+## Recent Product Updates
+
+- Added persistent local watchlist (saved in browser localStorage)
+- Added “Surprise Me” taste button for quick discovery
+- Added stale-filter indicator when settings change and refresh is needed
+- Added upcoming movie discovery by preferred genres
+- Added actor relationship mapping from recommendation cast overlap
+- Added fun facts and interactive movie quiz sections
+- Added updated frontend screenshot assets in `/public`
 
 ## Next Steps (V2)
 

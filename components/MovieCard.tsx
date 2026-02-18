@@ -1,6 +1,12 @@
 import { RecommendedMovie } from '@/types/movie';
 
-export function MovieCard({ movie }: { movie: RecommendedMovie }) {
+export function MovieCard({
+  movie,
+  onAddToWatchlist
+}: {
+  movie: RecommendedMovie;
+  onAddToWatchlist?: (movie: RecommendedMovie) => void;
+}) {
   const poster = movie.posterPath
     ? `https://image.tmdb.org/t/p/w500${movie.posterPath}`
     : 'https://placehold.co/500x750/18181b/a1a1aa?text=No+Poster';
@@ -27,6 +33,14 @@ export function MovieCard({ movie }: { movie: RecommendedMovie }) {
           <p className="text-xs text-zinc-300">
             Cast: {movie.cast.slice(0, 3).map((c) => c.name).join(', ')}
           </p>
+        )}
+        {onAddToWatchlist && (
+          <button
+            onClick={() => onAddToWatchlist(movie)}
+            className="mt-2 rounded-lg border border-zinc-700 px-3 py-1 text-xs text-zinc-200 hover:border-emerald-500 hover:text-emerald-300"
+          >
+            + Add to Watchlist
+          </button>
         )}
       </div>
     </article>

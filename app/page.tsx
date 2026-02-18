@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { GenrePicker } from '@/components/GenrePicker';
 import { MovieCard } from '@/components/MovieCard';
 import { RecommendedMovie, Movie, ActorConnection } from '@/types/movie';
@@ -8,20 +8,58 @@ import { UpcomingMovies } from '@/components/UpcomingMovies';
 import { FunFacts } from '@/components/FunFacts';
 import { MovieQuiz } from '@/components/MovieQuiz';
 import { ActorNetwork } from '@/components/ActorNetwork';
+import { WatchlistPanel } from '@/components/WatchlistPanel';
+import { GENRES } from '@/lib/recommender';
+
+const WATCHLIST_KEY = 'movie-recs-watchlist';
 
 export default function HomePage() {
   const [favoriteGenres, setFavoriteGenres] = useState<number[]>([878, 53]);
   const [minVoteAverage, setMinVoteAverage] = useState(6.5);
   const [recs, setRecs] = useState<RecommendedMovie[]>([]);
   const [upcoming, setUpcoming] = useState<Movie[]>([]);
+  const [watchlist, setWatchlist] = useState<Movie[]>([]);
   const [actorConnections, setActorConnections] = useState<ActorConnection[]>([]);
   const [actorHighlights, setActorHighlights] = useState<Array<{ name: string; appearances: number }>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsRefresh, setNeedsRefresh] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(WATCHLIST_KEY);
+      if (saved) setWatchlist(JSON.parse(saved));
+    } catch {
+      // ignore malformed local storage
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(WATCHLIST_KEY, JSON.stringify(watchlist));
+  }, [watchlist]);
 
   const toggleGenre = (id: number) => {
     setFavoriteGenres((curr) => (curr.includes(id) ? curr.filter((g) => g !== id) : [...curr, id]));
+    setNeedsRefresh(true);
   };
+
+  const addToWatchlist = (movie: RecommendedMovie) => {
+    setWatchlist((curr) => (curr.some((m) => m.id === movie.id) ? curr : [...curr, movie]));
+  };
+
+  const removeFromWatchlist = (id: number) => {
+    setWatchlist((curr) => curr.filter((m) => m.id !== id));
+  };
+
+  const surpriseMe = () => {
+    const genreIds = GENRES.map((g) => g.id);
+    const shuffled = [...genreIds].sort(() => Math.random() - 0.5);
+    setFavoriteGenres(shuffled.slice(0, 3));
+    setMinVoteAverage(Number((5.5 + Math.random() * 2.5).toFixed(1)));
+    setNeedsRefresh(true);
+  };
+
+  const totalSaved = useMemo(() => watchlist.length, [watchlist]);
 
   const getRecommendations = async () => {
     setLoading(true);
@@ -50,6 +88,7 @@ export default function HomePage() {
       setActorConnections(recData.actorConnections ?? []);
       setActorHighlights(recData.actorHighlights ?? []);
       setUpcoming(upcomingData.upcoming ?? []);
+      setNeedsRefresh(false);
     } catch (e: any) {
       setError(e.message ?? 'Could not fetch recommendations');
     } finally {
@@ -64,6 +103,7 @@ export default function HomePage() {
         <p className="text-zinc-300">
           Personalized movie picks, upcoming releases, actor connection mapping, and a fun quiz.
         </p>
+        <p className="text-xs text-zinc-400">Watchlist saved: {totalSaved}</p>
       </header>
 
       <section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 space-y-5">
@@ -80,19 +120,31 @@ export default function HomePage() {
             max={9}
             step={0.1}
             value={minVoteAverage}
-            onChange={(e) => setMinVoteAverage(Number(e.target.value))}
+            onChange={(e) => {
+              setMinVoteAverage(Number(e.target.value));
+              setNeedsRefresh(true);
+            }}
             className="w-full"
           />
         </div>
 
-        <button
-          onClick={getRecommendations}
-          disabled={loading || favoriteGenres.length === 0}
-          className="rounded-xl bg-emerald-500 px-4 py-2 font-medium text-zinc-950 disabled:opacity-60"
-        >
-          {loading ? 'Building your movie universe...' : 'Recommend for me'}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={getRecommendations}
+            disabled={loading || favoriteGenres.length === 0}
+            className="rounded-xl bg-emerald-500 px-4 py-2 font-medium text-zinc-950 disabled:opacity-60"
+          >
+            {loading ? 'Building your movie universe...' : 'Recommend for me'}
+          </button>
+          <button
+            onClick={surpriseMe}
+            className="rounded-xl border border-zinc-700 px-4 py-2 font-medium text-zinc-200 hover:border-emerald-500"
+          >
+            Surprise Me
+          </button>
+        </div>
 
+        {needsRefresh && <p className="text-amber-300 text-xs">Filters changed. Click “Recommend for me” to refresh results.</p>}
         {error && <p className="text-red-400 text-sm">{error}</p>}
       </section>
 
@@ -103,12 +155,13 @@ export default function HomePage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recs.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} />
+              <MovieCard key={movie.id} movie={movie} onAddToWatchlist={addToWatchlist} />
             ))}
           </div>
         )}
       </section>
 
+      <WatchlistPanel watchlist={watchlist} onRemove={removeFromWatchlist} />
       <ActorNetwork highlights={actorHighlights} connections={actorConnections} />
       <UpcomingMovies movies={upcoming} />
       <FunFacts />
