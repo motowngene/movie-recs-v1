@@ -23,6 +23,11 @@ export function MovieCard({ movie }: { movie: RecommendedMovie }) {
         <p className="text-sm text-zinc-300 line-clamp-3">{movie.overview || 'No overview available.'}</p>
         <p className="text-xs text-emerald-300">Why: {movie.why.short}</p>
         <p className="text-xs text-zinc-400">{movie.why.detail}</p>
+        {movie.cast && movie.cast.length > 0 && (
+          <p className="text-xs text-zinc-300">
+            Cast: {movie.cast.slice(0, 3).map((c) => c.name).join(', ')}
+          </p>
+        )}
       </div>
     </article>
   );

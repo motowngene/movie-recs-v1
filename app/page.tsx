@@ -3,12 +3,19 @@
 import { useState } from 'react';
 import { GenrePicker } from '@/components/GenrePicker';
 import { MovieCard } from '@/components/MovieCard';
-import { RecommendedMovie } from '@/types/movie';
+import { RecommendedMovie, Movie, ActorConnection } from '@/types/movie';
+import { UpcomingMovies } from '@/components/UpcomingMovies';
+import { FunFacts } from '@/components/FunFacts';
+import { MovieQuiz } from '@/components/MovieQuiz';
+import { ActorNetwork } from '@/components/ActorNetwork';
 
 export default function HomePage() {
   const [favoriteGenres, setFavoriteGenres] = useState<number[]>([878, 53]);
   const [minVoteAverage, setMinVoteAverage] = useState(6.5);
   const [recs, setRecs] = useState<RecommendedMovie[]>([]);
+  const [upcoming, setUpcoming] = useState<Movie[]>([]);
+  const [actorConnections, setActorConnections] = useState<ActorConnection[]>([]);
+  const [actorHighlights, setActorHighlights] = useState<Array<{ name: string; appearances: number }>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,14 +27,29 @@ export default function HomePage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/recommend', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ favoriteGenres, minVoteAverage })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Request failed');
-      setRecs(data.recommendations ?? []);
+      const [recRes, upcomingRes] = await Promise.all([
+        fetch('/api/recommend', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ favoriteGenres, minVoteAverage })
+        }),
+        fetch('/api/upcoming', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ favoriteGenres })
+        })
+      ]);
+
+      const recData = await recRes.json();
+      const upcomingData = await upcomingRes.json();
+
+      if (!recRes.ok) throw new Error(recData.error || 'Recommendation request failed');
+      if (!upcomingRes.ok) throw new Error(upcomingData.error || 'Upcoming request failed');
+
+      setRecs(recData.recommendations ?? []);
+      setActorConnections(recData.actorConnections ?? []);
+      setActorHighlights(recData.actorHighlights ?? []);
+      setUpcoming(upcomingData.upcoming ?? []);
     } catch (e: any) {
       setError(e.message ?? 'Could not fetch recommendations');
     } finally {
@@ -38,9 +60,9 @@ export default function HomePage() {
   return (
     <main className="mx-auto max-w-6xl px-6 py-10 space-y-8">
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold">Movie Recs V1</h1>
+        <h1 className="text-3xl font-bold">Movie Recs V1+</h1>
         <p className="text-zinc-300">
-          Pick genres you like, then generate personalized recommendations with explainable ranking.
+          Personalized movie picks, upcoming releases, actor connection mapping, and a fun quiz.
         </p>
       </header>
 
@@ -68,14 +90,14 @@ export default function HomePage() {
           disabled={loading || favoriteGenres.length === 0}
           className="rounded-xl bg-emerald-500 px-4 py-2 font-medium text-zinc-950 disabled:opacity-60"
         >
-          {loading ? 'Finding recommendations...' : 'Recommend for me'}
+          {loading ? 'Building your movie universe...' : 'Recommend for me'}
         </button>
 
         {error && <p className="text-red-400 text-sm">{error}</p>}
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Recommendations</h2>
+        <h2 className="text-xl font-semibold">🍿 Your Recommendations</h2>
         {recs.length === 0 ? (
           <p className="text-zinc-400 text-sm">No recommendations yet. Click the button above.</p>
         ) : (
@@ -86,6 +108,11 @@ export default function HomePage() {
           </div>
         )}
       </section>
+
+      <ActorNetwork highlights={actorHighlights} connections={actorConnections} />
+      <UpcomingMovies movies={upcoming} />
+      <FunFacts />
+      <MovieQuiz />
     </main>
   );
 }

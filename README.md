@@ -6,13 +6,15 @@ A V1 movie recommendation website built with Next.js.
 
 ![Movie Recs V1 Frontend](./public/frontend-preview.png)
 
-## What it does (V1)
+## What it does (V1+)
 
 - Lets users choose favorite genres
-- Lets users set a minimum rating threshold
-- Fetches candidate movies from TMDB
+- Lets users set a minimum TMDB rating threshold
+- Fetches candidate and upcoming movies from TMDB
 - Ranks recommendations with a simple explainable scoring model
-- Shows a short "Why recommended" explanation per movie
+- Shows "Why recommended" and top cast on each movie card
+- Builds an actor connection graph (co-star relationships)
+- Includes a fun facts panel and a movie knowledge quiz
 
 ## Stack
 
@@ -35,9 +37,11 @@ npm install
 cp .env.example .env.local
 ```
 
-3. Add your TMDB key to `.env.local`:
+3. Add TMDB auth to `.env.local` (v4 read token preferred):
 
 ```bash
+TMDB_API_READ_ACCESS_TOKEN=...
+# or legacy key
 TMDB_API_KEY=...
 ```
 
@@ -52,7 +56,10 @@ Open `http://localhost:3000`.
 ## API Routes
 
 - `GET /api/search?q=...` → movie search (TMDB)
-- `POST /api/recommend` with body:
+- `POST /api/recommend` → recommendations + actor network metadata
+- `POST /api/upcoming` → upcoming titles by preferred genres
+
+`POST /api/recommend` body:
 
 ```json
 {

@@ -1,6 +1,29 @@
-import { Movie } from '@/types/movie';
+import { CastMember, Movie } from '@/types/movie';
 
 const TMDB_BASE = 'https://api.themoviedb.org/3';
+
+type TmdbMovie = {
+  id: number;
+  title: string;
+  overview: string;
+  poster_path?: string | null;
+  release_date?: string;
+  vote_average?: number;
+  genre_ids?: number[];
+};
+
+type TmdbListResponse = {
+  results: TmdbMovie[];
+};
+
+type TmdbCreditsResponse = {
+  cast: Array<{
+    id: number;
+    name: string;
+    character?: string;
+    profile_path?: string | null;
+  }>;
+};
 
 function getTmdbAuth() {
   const readToken = process.env.TMDB_API_READ_ACCESS_TOKEN || process.env.TMDB_API_KEY;
@@ -8,18 +31,12 @@ function getTmdbAuth() {
     throw new Error('TMDB auth is missing. Set TMDB_API_READ_ACCESS_TOKEN (preferred) or TMDB_API_KEY');
   }
 
-  // TMDB v4 read tokens are JWT-like and must be sent as Bearer auth.
-  if (readToken.startsWith('eyJ')) {
-    return { type: 'bearer' as const, value: readToken };
-  }
-
-  // Legacy TMDB v3 key support.
+  if (readToken.startsWith('eyJ')) return { type: 'bearer' as const, value: readToken };
   return { type: 'api_key' as const, value: readToken };
 }
 
 async function tmdbFetch<T>(path: string): Promise<T> {
   const auth = getTmdbAuth();
-
   const url =
     auth.type === 'api_key'
       ? `${TMDB_BASE}${path}${path.includes('?') ? '&' : '?'}api_key=${auth.value}`
@@ -29,28 +46,45 @@ async function tmdbFetch<T>(path: string): Promise<T> {
     headers: auth.type === 'bearer' ? { Authorization: `Bearer ${auth.value}` } : undefined,
     next: { revalidate: 1800 }
   });
+
   if (!res.ok) throw new Error(`TMDB error: ${res.status}`);
   return res.json();
 }
 
 export async function searchMovies(query: string): Promise<Movie[]> {
   if (!query.trim()) return [];
-  const data = await tmdbFetch<{ results: any[] }>(`/search/movie?query=${encodeURIComponent(query)}`);
+  const data = await tmdbFetch<TmdbListResponse>(`/search/movie?query=${encodeURIComponent(query)}`);
   return data.results.slice(0, 20).map(toMovie);
 }
 
 export async function discoverByGenre(genreIds: number[]): Promise<Movie[]> {
   const genreParam = genreIds.length ? `&with_genres=${genreIds.join(',')}` : '';
-  const data = await tmdbFetch<{ results: any[] }>(`/discover/movie?sort_by=popularity.desc${genreParam}`);
+  const data = await tmdbFetch<TmdbListResponse>(`/discover/movie?sort_by=popularity.desc${genreParam}`);
   return data.results.slice(0, 30).map(toMovie);
 }
 
-function toMovie(m: any): Movie {
+export async function discoverUpcomingByGenre(genreIds: number[]): Promise<Movie[]> {
+  const genreParam = genreIds.length ? `&with_genres=${genreIds.join(',')}` : '';
+  const data = await tmdbFetch<TmdbListResponse>(`/discover/movie?sort_by=popularity.desc&primary_release_date.gte=${new Date().toISOString().slice(0, 10)}${genreParam}`);
+  return data.results.slice(0, 12).map(toMovie);
+}
+
+export async function getMovieCast(movieId: number): Promise<CastMember[]> {
+  const data = await tmdbFetch<TmdbCreditsResponse>(`/movie/${movieId}/credits`);
+  return (data.cast ?? []).slice(0, 6).map((c) => ({
+    id: c.id,
+    name: c.name,
+    character: c.character,
+    profilePath: c.profile_path ?? undefined
+  }));
+}
+
+function toMovie(m: TmdbMovie): Movie {
   return {
     id: m.id,
     title: m.title,
     overview: m.overview,
-    posterPath: m.poster_path,
+    posterPath: m.poster_path ?? undefined,
     releaseDate: m.release_date,
     voteAverage: m.vote_average,
     genreIds: m.genre_ids

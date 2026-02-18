@@ -8,6 +8,13 @@ export type Movie = {
   genreIds?: number[];
 };
 
+export type CastMember = {
+  id: number;
+  name: string;
+  character?: string;
+  profilePath?: string;
+};
+
 export type RecommendationReason = {
   short: string;
   detail: string;
@@ -16,4 +23,11 @@ export type RecommendationReason = {
 export type RecommendedMovie = Movie & {
   score: number;
   why: RecommendationReason;
+  cast?: CastMember[];
+};
+
+export type ActorConnection = {
+  actorA: string;
+  actorB: string;
+  sharedMovies: string[];
 };
