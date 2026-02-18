@@ -97,16 +97,18 @@ export default function HomePage() {
   };
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10 space-y-8">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold">Movie Recs V1+</h1>
+    <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
+      <header className="card-glass rounded-2xl p-6 space-y-3">
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-3xl font-bold">Movie Recs <span className="accent-gold">V1+</span></h1>
+          <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">Watchlist: {totalSaved}</span>
+        </div>
         <p className="text-zinc-300">
           Personalized movie picks, upcoming releases, actor connection mapping, and a fun quiz.
         </p>
-        <p className="text-xs text-zinc-400">Watchlist saved: {totalSaved}</p>
       </header>
 
-      <section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 space-y-5">
+      <section className="card-glass rounded-2xl p-5 space-y-5">
         <div>
           <h2 className="font-semibold mb-2">Favorite Genres</h2>
           <GenrePicker selected={favoriteGenres} onToggle={toggleGenre} />
@@ -132,7 +134,7 @@ export default function HomePage() {
           <button
             onClick={getRecommendations}
             disabled={loading || favoriteGenres.length === 0}
-            className="rounded-xl bg-emerald-500 px-4 py-2 font-medium text-zinc-950 disabled:opacity-60"
+            className="btn-gold disabled:opacity-60"
           >
             {loading ? 'Building your movie universe...' : 'Recommend for me'}
           </button>
@@ -149,7 +151,7 @@ export default function HomePage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">🍿 Your Recommendations</h2>
+        <h2 className="text-xl font-semibold">🍿 Your Recommendations <span className="accent-gold">for tonight</span></h2>
         {recs.length === 0 ? (
           <p className="text-zinc-400 text-sm">No recommendations yet. Click the button above.</p>
         ) : (

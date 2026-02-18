@@ -8,7 +8,7 @@ export function WatchlistPanel({
   onRemove: (id: number) => void;
 }) {
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 space-y-3">
+    <section className="card-glass rounded-2xl p-5 space-y-3">
       <h2 className="text-xl font-semibold">⭐ Your Watchlist</h2>
       {watchlist.length === 0 ? (
         <p className="text-sm text-zinc-400">No saved movies yet. Add titles from recommendations.</p>

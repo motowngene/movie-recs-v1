@@ -8,7 +8,7 @@ const FACTS = [
 
 export function FunFacts() {
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 space-y-3">
+    <section className="card-glass rounded-2xl p-5 space-y-3">
       <h2 className="text-xl font-semibold">🎬 Fun Movie Facts</h2>
       <ul className="list-disc space-y-2 pl-6 text-sm text-zinc-300">
         {FACTS.map((fact) => (

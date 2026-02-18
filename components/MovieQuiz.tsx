@@ -34,7 +34,7 @@ export function MovieQuiz() {
   );
 
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 space-y-4">
+    <section className="card-glass rounded-2xl p-5 space-y-4">
       <h2 className="text-xl font-semibold">🧠 Test Your Movie Knowledge</h2>
       <div className="space-y-4">
         {QUESTIONS.map((q, idx) => (

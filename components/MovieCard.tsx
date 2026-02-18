@@ -12,8 +12,8 @@ export function MovieCard({
     : 'https://placehold.co/500x750/18181b/a1a1aa?text=No+Poster';
 
   return (
-    <article className="rounded-2xl border border-zinc-800 bg-zinc-900/60 overflow-hidden">
-      <img src={poster} alt={movie.title} className="h-80 w-full object-cover" />
+    <article className="group rounded-2xl border border-zinc-800 bg-zinc-900/60 overflow-hidden transition hover:-translate-y-0.5 hover:border-zinc-600 hover:shadow-xl hover:shadow-black/30">
+      <img src={poster} alt={movie.title} className="h-80 w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
       <div className="p-4 space-y-2">
         <div className="flex items-start justify-between gap-3">
           <h3 className="font-semibold leading-tight">{movie.title}</h3>

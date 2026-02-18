@@ -8,7 +8,7 @@ export function UpcomingMovies({ movies }: { movies: Movie[] }) {
       <h2 className="text-xl font-semibold">🚀 Upcoming Movies You Might Like</h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {movies.slice(0, 6).map((movie) => (
-          <article key={movie.id} className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-3">
+          <article key={movie.id} className="card-glass rounded-xl p-3">
             <h3 className="font-medium">{movie.title}</h3>
             <p className="text-xs text-zinc-400 mt-1">Release: {movie.releaseDate || 'TBA'} · TMDB {(movie.voteAverage ?? 0).toFixed(1)}/10</p>
             <p className="text-sm text-zinc-300 mt-2 line-clamp-3">{movie.overview || 'No overview yet.'}</p>

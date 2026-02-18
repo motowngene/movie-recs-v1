@@ -10,6 +10,10 @@ A V1 movie recommendation website built with Next.js.
 
 ![Movie Recs V1 Plus Frontend](./public/frontend-preview-v2.png)
 
+### IMDb-Inspired UX Refresh
+
+![Movie Recs V1 IMDb-Inspired UI](./public/frontend-preview-v3.png)
+
 ## What it does (V1+)
 
 - Lets users choose favorite genres
@@ -90,6 +94,7 @@ Recommended production-safe approach:
 - Added actor relationship mapping from recommendation cast overlap
 - Added fun facts and interactive movie quiz sections
 - Added updated frontend screenshot assets in `/public`
+- Added IMDb-inspired visual refresh: gold accent CTAs, glass cards, improved hierarchy, and hover polish
 
 ## Next Steps (V2)
 

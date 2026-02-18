@@ -10,7 +10,7 @@ export function ActorNetwork({
   if (!highlights.length && !connections.length) return null;
 
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 space-y-4">
+    <section className="card-glass rounded-2xl p-5 space-y-4">
       <h2 className="text-xl font-semibold">🕸️ Actor Connection Graph</h2>
 
       {highlights.length > 0 && (
