@@ -14,6 +14,10 @@ A V1 movie recommendation website built with Next.js.
 
 ![Movie Recs V1 IMDb-Inspired UI](./public/frontend-preview-v3.png)
 
+### A Good Movie To Watch–Inspired Warm Editorial Refresh
+
+![Movie Recs V1 Warm Editorial UI](./public/frontend-preview-v4.png)
+
 ## What it does (V1+)
 
 - Lets users choose favorite genres
@@ -95,6 +99,7 @@ Recommended production-safe approach:
 - Added fun facts and interactive movie quiz sections
 - Added updated frontend screenshot assets in `/public`
 - Added IMDb-inspired visual refresh: gold accent CTAs, glass cards, improved hierarchy, and hover polish
+- Added warm editorial UX refresh inspired by A Good Movie To Watch (light palette, softer cards, human-friendly tone)
 
 ## Next Steps (V2)
 

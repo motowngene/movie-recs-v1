@@ -18,8 +18,8 @@ export function GenrePicker({
             onClick={() => onToggle(genre.id)}
             className={`rounded-full border px-3 py-1 text-sm transition ${
               active
-                ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300'
-                : 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-zinc-500'
+                ? 'border-orange-400 bg-orange-100 text-orange-800'
+                : 'border-amber-300 bg-white text-zinc-700 hover:border-orange-300'
             }`}
           >
             {genre.name}

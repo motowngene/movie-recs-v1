@@ -100,10 +100,10 @@ export default function HomePage() {
     <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
       <header className="card-glass rounded-2xl p-6 space-y-3">
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-3xl font-bold">Movie Recs <span className="accent-gold">V1+</span></h1>
-          <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">Watchlist: {totalSaved}</span>
+          <h1 className="text-3xl font-bold tracking-tight">Movie Recs <span className="accent-gold">V1+</span></h1>
+          <span className="rounded-full border border-amber-300 px-3 py-1 text-xs text-zinc-700">Watchlist: {totalSaved}</span>
         </div>
-        <p className="text-zinc-300">
+        <p className="text-zinc-700">
           Personalized movie picks, upcoming releases, actor connection mapping, and a fun quiz.
         </p>
       </header>
@@ -115,7 +115,7 @@ export default function HomePage() {
         </div>
 
         <div className="max-w-sm">
-          <label className="text-sm text-zinc-300 block mb-1">Minimum TMDB Rating: {minVoteAverage.toFixed(1)}/10</label>
+          <label className="text-sm text-zinc-700 block mb-1">Minimum TMDB Rating: {minVoteAverage.toFixed(1)}/10</label>
           <input
             type="range"
             min={5}
@@ -140,20 +140,20 @@ export default function HomePage() {
           </button>
           <button
             onClick={surpriseMe}
-            className="rounded-xl border border-zinc-700 px-4 py-2 font-medium text-zinc-200 hover:border-emerald-500"
+            className="rounded-xl border border-amber-300 px-4 py-2 font-medium text-zinc-800 hover:border-orange-500 hover:text-orange-700"
           >
             Surprise Me
           </button>
         </div>
 
-        {needsRefresh && <p className="text-amber-300 text-xs">Filters changed. Click “Recommend for me” to refresh results.</p>}
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {needsRefresh && <p className="text-orange-700 text-xs">Filters changed. Click “Recommend for me” to refresh results.</p>}
+        {error && <p className="text-red-600 text-sm">{error}</p>}
       </section>
 
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">🍿 Your Recommendations <span className="accent-gold">for tonight</span></h2>
         {recs.length === 0 ? (
-          <p className="text-zinc-400 text-sm">No recommendations yet. Click the button above.</p>
+          <p className="text-zinc-600 text-sm">No recommendations yet. Click the button above.</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recs.map((movie) => (
