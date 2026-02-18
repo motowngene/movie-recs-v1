@@ -1,0 +1,91 @@
+'use client';
+
+import { useState } from 'react';
+import { GenrePicker } from '@/components/GenrePicker';
+import { MovieCard } from '@/components/MovieCard';
+import { RecommendedMovie } from '@/types/movie';
+
+export default function HomePage() {
+  const [favoriteGenres, setFavoriteGenres] = useState<number[]>([878, 53]);
+  const [minVoteAverage, setMinVoteAverage] = useState(6.5);
+  const [recs, setRecs] = useState<RecommendedMovie[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const toggleGenre = (id: number) => {
+    setFavoriteGenres((curr) => (curr.includes(id) ? curr.filter((g) => g !== id) : [...curr, id]));
+  };
+
+  const getRecommendations = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/recommend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ favoriteGenres, minVoteAverage })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Request failed');
+      setRecs(data.recommendations ?? []);
+    } catch (e: any) {
+      setError(e.message ?? 'Could not fetch recommendations');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <main className="mx-auto max-w-6xl px-6 py-10 space-y-8">
+      <header className="space-y-2">
+        <h1 className="text-3xl font-bold">Movie Recs V1</h1>
+        <p className="text-zinc-300">
+          Pick genres you like, then generate personalized recommendations with explainable ranking.
+        </p>
+      </header>
+
+      <section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 space-y-5">
+        <div>
+          <h2 className="font-semibold mb-2">Favorite Genres</h2>
+          <GenrePicker selected={favoriteGenres} onToggle={toggleGenre} />
+        </div>
+
+        <div className="max-w-sm">
+          <label className="text-sm text-zinc-300 block mb-1">Minimum TMDB Rating: {minVoteAverage.toFixed(1)}/10</label>
+          <input
+            type="range"
+            min={5}
+            max={9}
+            step={0.1}
+            value={minVoteAverage}
+            onChange={(e) => setMinVoteAverage(Number(e.target.value))}
+            className="w-full"
+          />
+        </div>
+
+        <button
+          onClick={getRecommendations}
+          disabled={loading || favoriteGenres.length === 0}
+          className="rounded-xl bg-emerald-500 px-4 py-2 font-medium text-zinc-950 disabled:opacity-60"
+        >
+          {loading ? 'Finding recommendations...' : 'Recommend for me'}
+        </button>
+
+        {error && <p className="text-red-400 text-sm">{error}</p>}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Recommendations</h2>
+        {recs.length === 0 ? (
+          <p className="text-zinc-400 text-sm">No recommendations yet. Click the button above.</p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {recs.map((movie) => (
+              <MovieCard key={movie.id} movie={movie} />
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
