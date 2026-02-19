@@ -9,6 +9,7 @@ import { FunFacts } from '@/components/FunFacts';
 import { MovieQuiz } from '@/components/MovieQuiz';
 import { ActorNetwork } from '@/components/ActorNetwork';
 import { WatchlistPanel } from '@/components/WatchlistPanel';
+import { MovieCompare } from '@/components/MovieCompare';
 import { GENRES } from '@/lib/recommender';
 
 const WATCHLIST_KEY = 'movie-recs-watchlist';
@@ -16,9 +17,11 @@ const WATCHLIST_KEY = 'movie-recs-watchlist';
 export default function HomePage() {
   const [favoriteGenres, setFavoriteGenres] = useState<number[]>([878, 53]);
   const [minVoteAverage, setMinVoteAverage] = useState(6.5);
+  const [upcomingTimeframeDays, setUpcomingTimeframeDays] = useState<30 | 90 | 180>(90);
   const [recs, setRecs] = useState<RecommendedMovie[]>([]);
   const [upcoming, setUpcoming] = useState<Movie[]>([]);
   const [watchlist, setWatchlist] = useState<Movie[]>([]);
+  const [compareSelection, setCompareSelection] = useState<Movie[]>([]);
   const [actorConnections, setActorConnections] = useState<ActorConnection[]>([]);
   const [actorHighlights, setActorHighlights] = useState<Array<{ name: string; appearances: number }>>([]);
   const [loading, setLoading] = useState(false);
@@ -49,6 +52,16 @@ export default function HomePage() {
 
   const removeFromWatchlist = (id: number) => {
     setWatchlist((curr) => curr.filter((m) => m.id !== id));
+    setCompareSelection((curr) => curr.filter((m) => m.id !== id));
+  };
+
+  const toggleCompare = (movie: Movie) => {
+    setCompareSelection((curr) => {
+      const exists = curr.some((m) => m.id === movie.id);
+      if (exists) return curr.filter((m) => m.id !== movie.id);
+      if (curr.length >= 3) return curr;
+      return [...curr, movie];
+    });
   };
 
   const surpriseMe = () => {
@@ -60,6 +73,7 @@ export default function HomePage() {
   };
 
   const totalSaved = useMemo(() => watchlist.length, [watchlist]);
+  const comparedIds = useMemo(() => compareSelection.map((m) => m.id), [compareSelection]);
 
   const getRecommendations = async () => {
     setLoading(true);
@@ -74,7 +88,7 @@ export default function HomePage() {
         fetch('/api/upcoming', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ favoriteGenres })
+          body: JSON.stringify({ favoriteGenres, timeframeDays: upcomingTimeframeDays })
         })
       ]);
 
@@ -104,7 +118,7 @@ export default function HomePage() {
           <span className="rounded-full border border-amber-300 px-3 py-1 text-xs text-zinc-700">Watchlist: {totalSaved}</span>
         </div>
         <p className="text-zinc-700">
-          Personalized movie picks, upcoming releases, actor connection mapping, and a fun quiz.
+          Personalized movie picks, upcoming release radar, actor connection mapping, and a fun quiz.
         </p>
       </header>
 
@@ -114,20 +128,38 @@ export default function HomePage() {
           <GenrePicker selected={favoriteGenres} onToggle={toggleGenre} />
         </div>
 
-        <div className="max-w-sm">
-          <label className="text-sm text-zinc-700 block mb-1">Minimum TMDB Rating: {minVoteAverage.toFixed(1)}/10</label>
-          <input
-            type="range"
-            min={5}
-            max={9}
-            step={0.1}
-            value={minVoteAverage}
-            onChange={(e) => {
-              setMinVoteAverage(Number(e.target.value));
-              setNeedsRefresh(true);
-            }}
-            className="w-full"
-          />
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="max-w-sm">
+            <label className="text-sm text-zinc-700 block mb-1">Minimum TMDB Rating: {minVoteAverage.toFixed(1)}/10</label>
+            <input
+              type="range"
+              min={5}
+              max={9}
+              step={0.1}
+              value={minVoteAverage}
+              onChange={(e) => {
+                setMinVoteAverage(Number(e.target.value));
+                setNeedsRefresh(true);
+              }}
+              className="w-full"
+            />
+          </div>
+
+          <div className="max-w-sm">
+            <label className="text-sm text-zinc-700 block mb-1">Upcoming radar timeframe</label>
+            <select
+              value={upcomingTimeframeDays}
+              onChange={(e) => {
+                setUpcomingTimeframeDays(Number(e.target.value) as 30 | 90 | 180);
+                setNeedsRefresh(true);
+              }}
+              className="w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-zinc-800"
+            >
+              <option value={30}>Next 30 days</option>
+              <option value={90}>Next 90 days</option>
+              <option value={180}>Next 180 days</option>
+            </select>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -157,15 +189,29 @@ export default function HomePage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recs.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} onAddToWatchlist={addToWatchlist} />
+              <MovieCard
+                key={movie.id}
+                movie={movie}
+                onAddToWatchlist={addToWatchlist}
+                onToggleCompare={toggleCompare}
+                isCompared={comparedIds.includes(movie.id)}
+                compareDisabled={compareSelection.length >= 3}
+              />
             ))}
           </div>
         )}
       </section>
 
-      <WatchlistPanel watchlist={watchlist} onRemove={removeFromWatchlist} />
+      <MovieCompare selected={compareSelection} onRemove={(id) => setCompareSelection((curr) => curr.filter((m) => m.id !== id))} />
+      <WatchlistPanel
+        watchlist={watchlist}
+        onRemove={removeFromWatchlist}
+        onToggleCompare={toggleCompare}
+        comparedIds={comparedIds}
+        compareDisabled={compareSelection.length >= 3}
+      />
       <ActorNetwork highlights={actorHighlights} connections={actorConnections} />
-      <UpcomingMovies movies={upcoming} />
+      <UpcomingMovies movies={upcoming} timeframeDays={upcomingTimeframeDays} />
       <FunFacts />
       <MovieQuiz />
     </main>

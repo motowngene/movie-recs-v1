@@ -63,9 +63,18 @@ export async function discoverByGenre(genreIds: number[]): Promise<Movie[]> {
   return data.results.slice(0, 30).map(toMovie);
 }
 
-export async function discoverUpcomingByGenre(genreIds: number[]): Promise<Movie[]> {
+export async function discoverUpcomingByGenre(genreIds: number[], timeframeDays = 90): Promise<Movie[]> {
+  const safeDays = [30, 90, 180].includes(timeframeDays) ? timeframeDays : 90;
+  const today = new Date();
+  const future = new Date(today);
+  future.setDate(today.getDate() + safeDays);
+
   const genreParam = genreIds.length ? `&with_genres=${genreIds.join(',')}` : '';
-  const data = await tmdbFetch<TmdbListResponse>(`/discover/movie?sort_by=popularity.desc&primary_release_date.gte=${new Date().toISOString().slice(0, 10)}${genreParam}`);
+  const data = await tmdbFetch<TmdbListResponse>(
+    `/discover/movie?sort_by=popularity.desc&primary_release_date.gte=${today.toISOString().slice(0, 10)}&primary_release_date.lte=${future
+      .toISOString()
+      .slice(0, 10)}${genreParam}`
+  );
   return data.results.slice(0, 12).map(toMovie);
 }
 

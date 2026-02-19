@@ -25,7 +25,9 @@ A V1 movie recommendation website built with Next.js.
 - Fetches candidate and upcoming movies from TMDB
 - Ranks recommendations with a simple explainable scoring model
 - Shows "Why recommended" and top cast on each movie card
-- Builds an actor connection graph (co-star relationships)
+- Supports side-by-side movie compare view (up to 3 titles from recommendations/watchlist)
+- Adds upcoming radar filtering windows (30 / 90 / 180 days)
+- Builds an actor connection graph with grouped strongest co-star links
 - Includes a fun facts panel and a movie knowledge quiz
 
 ## Stack
@@ -69,7 +71,7 @@ Open `http://localhost:3000`.
 
 - `GET /api/search?q=...` → movie search (TMDB)
 - `POST /api/recommend` → recommendations + actor network metadata
-- `POST /api/upcoming` → upcoming titles by preferred genres
+- `POST /api/upcoming` → upcoming titles by preferred genres + timeframe filter
 
 `POST /api/recommend` body:
 
@@ -79,6 +81,17 @@ Open `http://localhost:3000`.
   "minVoteAverage": 6.5
 }
 ```
+
+`POST /api/upcoming` body:
+
+```json
+{
+  "favoriteGenres": [878, 53],
+  "timeframeDays": 90
+}
+```
+
+Allowed `timeframeDays` values: `30`, `90`, `180`.
 
 ## Notes on IMDb / Rotten Tomatoes
 
@@ -100,6 +113,9 @@ Recommended production-safe approach:
 - Added updated frontend screenshot assets in `/public`
 - Added IMDb-inspired visual refresh: gold accent CTAs, glass cards, improved hierarchy, and hover polish
 - Added warm editorial UX refresh inspired by A Good Movie To Watch (light palette, softer cards, human-friendly tone)
+- Added compare view for research workflows (up to 3 movies, with rating/release/overview/cast preview)
+- Added upcoming radar window filters in API + UI (30/90/180 day horizon)
+- Improved actor network readability by grouping strongest co-star links by anchor actor
 
 ## Next Steps (V2)
 
