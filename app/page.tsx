@@ -23,6 +23,7 @@ export default function HomePage() {
   const [upcomingTimeframeDays, setUpcomingTimeframeDays] = useState<30 | 90 | 180>(90);
   const [recs, setRecs] = useState<RecommendedMovie[]>([]);
   const [upcoming, setUpcoming] = useState<Movie[]>([]);
+  const [editorPicks, setEditorPicks] = useState<Movie[]>([]);
   const [watchlist, setWatchlist] = useState<Movie[]>([]);
   const [feedbackByMovie, setFeedbackByMovie] = useState<Record<number, FeedbackChoice>>({});
   const [compareSelection, setCompareSelection] = useState<Movie[]>([]);
@@ -89,15 +90,7 @@ export default function HomePage() {
   const totalSaved = useMemo(() => watchlist.length, [watchlist]);
   const comparedIds = useMemo(() => compareSelection.map((m) => m.id), [compareSelection]);
 
-  const editorPicks = useMemo(() => {
-    if (recs.length > 0) return recs.slice(0, 6);
-    if (upcoming.length > 0) return upcoming.slice(0, 6);
-    return [
-      { id: -1, title: 'Moonlit Signal', overview: 'A reflective sci-fi mystery with emotional depth.' },
-      { id: -2, title: 'Last Light Dispatch', overview: 'A warm thriller where unlikely allies reconnect.' },
-      { id: -3, title: 'Velvet Night Drive', overview: 'A stylish neo-noir with big performances.' }
-    ];
-  }, [recs, upcoming]);
+  // editor picks loaded from API
 
   const becauseYouLiked = useMemo(() => {
     const genreNameById = new Map(GENRES.map((genre) => [genre.id, genre.name]));
@@ -118,7 +111,7 @@ export default function HomePage() {
     setLoading(true);
     setError(null);
     try {
-      const [recRes, upcomingRes] = await Promise.all([
+      const [recRes, upcomingRes, editorRes] = await Promise.all([
         fetch('/api/recommend', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -128,19 +121,27 @@ export default function HomePage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ favoriteGenres, timeframeDays: upcomingTimeframeDays })
+        }),
+        fetch('/api/editor-picks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ favoriteGenres })
         })
       ]);
 
       const recData = await recRes.json();
       const upcomingData = await upcomingRes.json();
+      const editorData = await editorRes.json();
 
       if (!recRes.ok) throw new Error(recData.error || 'Recommendation request failed');
       if (!upcomingRes.ok) throw new Error(upcomingData.error || 'Upcoming request failed');
+      if (!editorRes.ok) throw new Error(editorData.error || 'Editor picks request failed');
 
       setRecs(recData.recommendations ?? []);
       setActorConnections(recData.actorConnections ?? []);
       setActorHighlights(recData.actorHighlights ?? []);
       setUpcoming(upcomingData.upcoming ?? []);
+      setEditorPicks(editorData.editorPicks ?? []);
       setNeedsRefresh(false);
     } catch (e: any) {
       setError(e.message ?? 'Could not fetch recommendations');

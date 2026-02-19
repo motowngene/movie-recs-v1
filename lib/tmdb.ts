@@ -78,6 +78,18 @@ export async function discoverUpcomingByGenre(genreIds: number[], timeframeDays 
   return data.results.slice(0, 12).map(toMovie);
 }
 
+export async function discoverEditorPicks(genreIds: number[]): Promise<Movie[]> {
+  const genreParam = genreIds.length ? `&with_genres=${genreIds.join(',')}` : '';
+  const data = await tmdbFetch<TmdbListResponse>(
+    `/discover/movie?sort_by=vote_average.desc&vote_count.gte=400&include_adult=false${genreParam}`
+  );
+
+  return data.results
+    .filter((m) => !!m.poster_path)
+    .slice(0, 10)
+    .map(toMovie);
+}
+
 export async function getMovieCast(movieId: number): Promise<CastMember[]> {
   const data = await tmdbFetch<TmdbCreditsResponse>(`/movie/${movieId}/credits`);
   return (data.cast ?? []).slice(0, 6).map((c) => ({
