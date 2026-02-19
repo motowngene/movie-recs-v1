@@ -18,6 +18,10 @@ A V1 movie recommendation website built with Next.js.
 
 ![Movie Recs V1 Warm Editorial UI](./public/frontend-preview-v4.png)
 
+### Milestone 2: Engagement & Stickiness
+
+![Movie Recs V1 Engagement UI](./public/frontend-preview-v5.png)
+
 ## What it does (V1+)
 
 - Lets users choose favorite genres
@@ -29,6 +33,9 @@ A V1 movie recommendation website built with Next.js.
 - Adds upcoming radar filtering windows (30 / 90 / 180 days)
 - Builds an actor connection graph with grouped strongest co-star links
 - Includes a fun facts panel and a movie knowledge quiz
+- Surfaces an Editor Picks carousel for curated, quick-browse options
+- Adds “Because you liked...” reasoning cards tied to selected genres
+- Captures per-movie quick feedback (Love / Skip / Not for me) in localStorage
 
 ## Stack
 
@@ -116,6 +123,9 @@ Recommended production-safe approach:
 - Added compare view for research workflows (up to 3 movies, with rating/release/overview/cast preview)
 - Added upcoming radar window filters in API + UI (30/90/180 day horizon)
 - Improved actor network readability by grouping strongest co-star links by anchor actor
+- Added engagement milestone features: Editor Picks carousel + “Because you liked...” reasoning section
+- Added quick in-card feedback controls (Love / Skip / Not for me) persisted to localStorage
+- Added new frontend screenshot `public/frontend-preview-v5.png`
 
 ## Next Steps (V2)
 

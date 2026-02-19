@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { GenrePicker } from '@/components/GenrePicker';
-import { MovieCard } from '@/components/MovieCard';
+import { MovieCard, FeedbackChoice } from '@/components/MovieCard';
 import { RecommendedMovie, Movie, ActorConnection } from '@/types/movie';
 import { UpcomingMovies } from '@/components/UpcomingMovies';
 import { FunFacts } from '@/components/FunFacts';
@@ -10,9 +10,12 @@ import { MovieQuiz } from '@/components/MovieQuiz';
 import { ActorNetwork } from '@/components/ActorNetwork';
 import { WatchlistPanel } from '@/components/WatchlistPanel';
 import { MovieCompare } from '@/components/MovieCompare';
+import { EditorPicksCarousel } from '@/components/EditorPicksCarousel';
+import { BecauseYouLiked } from '@/components/BecauseYouLiked';
 import { GENRES } from '@/lib/recommender';
 
 const WATCHLIST_KEY = 'movie-recs-watchlist';
+const FEEDBACK_KEY = 'movie-recs-feedback';
 
 export default function HomePage() {
   const [favoriteGenres, setFavoriteGenres] = useState<number[]>([878, 53]);
@@ -21,6 +24,7 @@ export default function HomePage() {
   const [recs, setRecs] = useState<RecommendedMovie[]>([]);
   const [upcoming, setUpcoming] = useState<Movie[]>([]);
   const [watchlist, setWatchlist] = useState<Movie[]>([]);
+  const [feedbackByMovie, setFeedbackByMovie] = useState<Record<number, FeedbackChoice>>({});
   const [compareSelection, setCompareSelection] = useState<Movie[]>([]);
   const [actorConnections, setActorConnections] = useState<ActorConnection[]>([]);
   const [actorHighlights, setActorHighlights] = useState<Array<{ name: string; appearances: number }>>([]);
@@ -32,6 +36,8 @@ export default function HomePage() {
     try {
       const saved = localStorage.getItem(WATCHLIST_KEY);
       if (saved) setWatchlist(JSON.parse(saved));
+      const savedFeedback = localStorage.getItem(FEEDBACK_KEY);
+      if (savedFeedback) setFeedbackByMovie(JSON.parse(savedFeedback));
     } catch {
       // ignore malformed local storage
     }
@@ -40,6 +46,10 @@ export default function HomePage() {
   useEffect(() => {
     localStorage.setItem(WATCHLIST_KEY, JSON.stringify(watchlist));
   }, [watchlist]);
+
+  useEffect(() => {
+    localStorage.setItem(FEEDBACK_KEY, JSON.stringify(feedbackByMovie));
+  }, [feedbackByMovie]);
 
   const toggleGenre = (id: number) => {
     setFavoriteGenres((curr) => (curr.includes(id) ? curr.filter((g) => g !== id) : [...curr, id]));
@@ -53,6 +63,10 @@ export default function HomePage() {
   const removeFromWatchlist = (id: number) => {
     setWatchlist((curr) => curr.filter((m) => m.id !== id));
     setCompareSelection((curr) => curr.filter((m) => m.id !== id));
+  };
+
+  const setFeedback = (movieId: number, choice: FeedbackChoice) => {
+    setFeedbackByMovie((curr) => ({ ...curr, [movieId]: choice }));
   };
 
   const toggleCompare = (movie: Movie) => {
@@ -74,6 +88,31 @@ export default function HomePage() {
 
   const totalSaved = useMemo(() => watchlist.length, [watchlist]);
   const comparedIds = useMemo(() => compareSelection.map((m) => m.id), [compareSelection]);
+
+  const editorPicks = useMemo(() => {
+    if (recs.length > 0) return recs.slice(0, 6);
+    if (upcoming.length > 0) return upcoming.slice(0, 6);
+    return [
+      { id: -1, title: 'Moonlit Signal', overview: 'A reflective sci-fi mystery with emotional depth.' },
+      { id: -2, title: 'Last Light Dispatch', overview: 'A warm thriller where unlikely allies reconnect.' },
+      { id: -3, title: 'Velvet Night Drive', overview: 'A stylish neo-noir with big performances.' }
+    ];
+  }, [recs, upcoming]);
+
+  const becauseYouLiked = useMemo(() => {
+    const genreNameById = new Map(GENRES.map((genre) => [genre.id, genre.name]));
+
+    return favoriteGenres.slice(0, 3).map((genreId) => {
+      const genreName = genreNameById.get(genreId) ?? 'this vibe';
+      const representativeMovie = recs.find((movie) => movie.genreIds?.includes(genreId));
+      return {
+        title: genreName,
+        detail: representativeMovie
+          ? `Because you leaned into ${genreName.toLowerCase()}, we surfaced ${representativeMovie.title} and similar titles with strong overlap in tone, cast, and audience response.`
+          : `You keep coming back to ${genreName.toLowerCase()}, so we prioritize picks with a matching pace, mood, and rewatch potential.`
+      };
+    });
+  }, [favoriteGenres, recs]);
 
   const getRecommendations = async () => {
     setLoading(true);
@@ -182,6 +221,9 @@ export default function HomePage() {
         {error && <p className="text-red-600 text-sm">{error}</p>}
       </section>
 
+      <EditorPicksCarousel movies={editorPicks} />
+      <BecauseYouLiked reasons={becauseYouLiked} />
+
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">🍿 Your Recommendations <span className="accent-gold">for tonight</span></h2>
         {recs.length === 0 ? (
@@ -196,6 +238,8 @@ export default function HomePage() {
                 onToggleCompare={toggleCompare}
                 isCompared={comparedIds.includes(movie.id)}
                 compareDisabled={compareSelection.length >= 3}
+                feedback={feedbackByMovie[movie.id]}
+                onSetFeedback={setFeedback}
               />
             ))}
           </div>
